@@ -1,0 +1,52 @@
+USE DWHNorthwindOrders;
+CREATE PROCEDURE dwh.sp_LimpiarTablasDimensiones AS
+BEGIN
+    EXEC sp_MSforeachtable @command1='ALTER TABLE ? NOCHECK CONSTRAINT ALL';
+    DELETE FROM dwh.Dim_Producto;
+    DELETE FROM dwh.Dim_Cliente;
+    DELETE FROM dwh.Dim_Empleado;
+    DELETE FROM dwh.Dim_Transportista;
+    DELETE FROM dwh.Dim_Tiempo;
+    EXEC sp_MSforeachtable @command1='ALTER TABLE ? CHECK CONSTRAINT ALL';
+END;
+CREATE PROCEDURE dwh.sp_CargarDimProducto AS
+BEGIN
+    INSERT INTO dwh.Dim_Producto (ID_Producto, Nombre_Producto, Categoria, Precio)
+    SELECT ID_Producto, Nombre_Producto, Categoria, Precio
+    FROM staging.Stg_Producto;
+END;
+
+CREATE PROCEDURE dwh.sp_CargarDimCliente AS
+BEGIN
+    INSERT INTO dwh.Dim_Cliente (ID_Cliente, Nombre_Cliente, Región, País, Ciudad, Calificacion_Credito)
+    SELECT ID_Cliente, Nombre_Cliente, Región, País, Ciudad, Calificacion_Credito
+    FROM staging.Stg_Cliente;
+END;
+CREATE PROCEDURE dwh.sp_CargarDimEmpleado AS
+BEGIN
+    INSERT INTO dwh.Dim_Empleado (ID_Empleado, Nombre_Empleado, Posicion, Departamento)
+    SELECT ID_Empleado, Nombre_Empleado, Posicion, Departamento
+    FROM staging.Stg_Empleado;
+END;
+CREATE PROCEDURE dwh.sp_CargarDimTransportista AS
+BEGIN
+    INSERT INTO dwh.Dim_Transportista (ID_Transportista, Nombre_Transportista, Teléfono)
+    SELECT ID_Transportista, Nombre_Transportista, Teléfono
+    FROM staging.Stg_Transportista;
+END;
+CREATE PROCEDURE dwh.sp_CargarDimTiempo AS
+BEGIN
+    INSERT INTO dwh.Dim_Tiempo (ID_Tiempo, Año, Mes, Dia, Trimestre, Nombre_Mes, Nombre_Dia)
+    SELECT ID_Tiempo, Año, Mes, Dia, Trimestre, Nombre_Mes, Nombre_Dia
+    FROM staging.Stg_Tiempo;
+END;
+CREATE PROCEDURE dwh.sp_ActualizarDimensiones AS
+BEGIN
+    EXEC dwh.sp_LimpiarTablasDimensiones;
+    EXEC dwh.sp_CargarDimProducto;
+    EXEC dwh.sp_CargarDimCliente;
+    EXEC dwh.sp_CargarDimEmpleado;
+    EXEC dwh.sp_CargarDimTransportista;
+    EXEC dwh.sp_CargarDimTiempo;
+END;
+EXEC dwh.sp_ActualizarDimensiones;
